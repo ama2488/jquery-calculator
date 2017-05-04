@@ -90,3 +90,7 @@ body {
 .operator {
   font-size: 1.3em;
 }
+
+::selection {
+  background-color: transparent;
+}
