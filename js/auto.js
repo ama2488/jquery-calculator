@@ -24,32 +24,46 @@ $(() => {
       e.preventDefault();
     }
   });
-  function calculate(currOperator, value) {
-    const intValue = parseFloat(value, 10);
-    if (value === 'ERROR' || calc === 'ERROR') {
-      calc = 'ERROR';
-      // calculate beginning with negative number
-    } else if (value === '') {
-      operator = '-';
-    } else if (currOperator === '+') {
-      calc += intValue;
-    } else if (currOperator === '-') {
-      calc -= (intValue);
-    } else if (currOperator === 'x' || currOperator === '*') {
+
+
+  const calculator = { '+': function add(b) {
+    calc += b;
+  },
+    '-': function subtract(b) {
+      calc -= b;
+      calc = calc.toFixed(2);
+    },
+    x: function multiply(b) {
       if (calc === 0) {
         calc = 1;
       }
-      calc *= (intValue);
-      // calc = calc.toFixed(2);
-    } else if (currOperator === '÷' || currOperator === '/') {
-      if (value === '0') {
-        calc = 'ERROR';
-      } else {
-        calc /= (intValue);
-        calc = parseFloat(calc.toFixed(2));
+      calc *= b;
+    },
+    '÷': function divide(b) {
+      if (b === 0) {
+        calc = 'error';
       }
-    }
-  }
+      calc /= b;
+      calc = parseFloat(calc.toFixed(2));
+    },
+    '/': function divide(b) {
+      if (b === 0) {
+        calc = 'error';
+      }
+      calc /= b;
+      calc = parseFloat(calc.toFixed(2));
+    },
+    '*': function multiply(b) {
+      if (calc === 0) {
+        calc = 1;
+      }
+      calc *= b;
+    },
+    '': function restart(b) {
+      calc = b;
+    },
+  };
+
   $screen.keyup(function calculateString(e) {
     if (e.which === 27) {
       calc = 0;
@@ -59,15 +73,15 @@ $(() => {
       screenValue = '';
     } else if (e.which === 13) {
       $(this).submit();
-      screenValue = $(this)[0].value;
-      calculate(operator, screenValue);
+      screenValue = parseFloat($(this)[0].value, 10);
+      calculator[operator](screenValue);
       $screen.val(calc);
       operator = '';
     } else if ((e.shiftKey && (e.keyCode === 187 || e.keyCode === 56)) ||
     (!e.shiftKey && (e.keyCode === 191 || e.keyCode === 189))) {
       $(this).submit();
-      screenValue = $(this)[0].value;
-      calculate(operator, screenValue);
+      screenValue = parseFloat($(this)[0].value, 10);
+      calculator[operator](screenValue);
       if (e.shiftKey && e.keyCode === 187) {
         operator = '+';
       }
@@ -94,14 +108,14 @@ $(() => {
       $screen.focus();
       screenValue = '';
     } else if ($(this).attr('id') === 'equals') {
-      screenValue = $screen[0].value;
-      calculate(operator, screenValue);
+      screenValue = parseFloat($screen[0].value, 10);
+      calculator[operator](screenValue);
       $screen.val(calc);
       operator = '';
       $screen.focus();
     } else if ($(this).attr('class') === 'operator') {
-      screenValue = $screen[0].value;
-      calculate(operator, screenValue);
+      screenValue = parseFloat($screen[0].value, 10);
+      calculator[operator](screenValue);
       operator = $buttonValue;
       screenValue = '';
       $screen.val(calc);
