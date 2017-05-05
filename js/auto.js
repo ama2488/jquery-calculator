@@ -2,9 +2,7 @@
 $(() => {
   const $screen = $('#screen');
   const $buttons = $('span');
-  const calc = 0;
   let operator = '';
-  const screenValue = '';
   let calcArray = [];
 
   const calculator = {
@@ -18,9 +16,6 @@ $(() => {
       calcArray.push(calcResult);
     },
     x: function multiply(a, b) {
-      if (a === 0) {
-        a = 1;
-      }
       let calcResult = a * b;
       calcResult = parseFloat(calcResult.toFixed(2));
       calcArray.push(calcResult);
@@ -48,7 +43,7 @@ $(() => {
       calcResult = parseFloat(calcResult.toFixed(2));
       calcArray.push(calcResult);
     },
-    '': function restart(a, b) {
+    '': function restart(a) {
       const calcResult = a;
       calcArray.push(calcResult);
     },
@@ -112,14 +107,19 @@ $(() => {
       operator = '';
       $screen.focus();
     } else if ($(this).attr('class') === 'operator') {
-      calcArray.push(parseFloat($screen[0].value, 10));
-      if (calcArray.length > 1) {
-        calculator[operator](calcArray.shift(), calcArray.shift());
+      // allow negative values
+      if (($screen.val() === '') && $buttonValue === '-') {
+        $screen.val(($screen.val() + $buttonValue));
+      } else {
+        calcArray.push(parseFloat($screen[0].value, 10));
+        if (calcArray.length > 1) {
+          calculator[operator](calcArray.shift(), calcArray.shift());
+        }
+        operator = $buttonValue;
+        $screen.val('');
+        $screen.val(calcArray[0]);
+        $screen.select();
       }
-      operator = $buttonValue;
-      $screen.val('');
-      $screen.val(calcArray[0]);
-      $screen.select();
     } else {
       if ((1 * $screen.val()) === calcArray[0]) {
         $screen.val('');
