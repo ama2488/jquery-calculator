@@ -2,73 +2,83 @@
 $(() => {
   const $screen = $('#screen');
   const $buttons = $('span');
-  let calc = 0;
-  let operator = '+';
-  let screenValue = '';
+  const calc = 0;
+  let operator = '';
+  const screenValue = '';
+  let calcArray = [];
 
-  const calculator = { '+': function add(b) {
-    calc += b;
-  },
-    '-': function subtract(b) {
-      calc -= b;
-      calc = parseFloat(calc.toFixed(2));
+  const calculator = {
+    '+': function add(a, b) {
+      const calcResult = a + b;
+      calcArray.push(calcResult);
     },
-    x: function multiply(b) {
-      if (calc === 0) {
-        calc = 1;
+    '-': function subtract(a, b) {
+      let calcResult = a - b;
+      calcResult = parseFloat(calcResult.toFixed(2));
+      calcArray.push(calcResult);
+    },
+    x: function multiply(a, b) {
+      if (a === 0) {
+        a = 1;
       }
-      calc *= b;
-      calc = parseFloat(calc.toFixed(2));
+      let calcResult = a * b;
+      calcResult = parseFloat(calcResult.toFixed(2));
+      calcArray.push(calcResult);
     },
-    '÷': function divide(b) {
+    '÷': function divide(a, b) {
       if (b === 0) {
-        calc = 'error';
+        calcArray.push('error');
       } else {
-        calc /= b;
-        calc = parseFloat(calc.toFixed(2));
+        let calcResult = a / b;
+        calcResult = parseFloat(calcResult.toFixed(2));
+        calcArray.push(calcResult);
       }
     },
-    '/': function divide(b) {
+    '/': function divide(a, b) {
       if (b === 0) {
-        calc = 'error';
+        calcArray.push('error');
       } else {
-        calc /= b;
-        calc = parseFloat(calc.toFixed(2));
+        let calcResult = a / b;
+        calcResult = parseFloat(calcResult.toFixed(2));
+        calcArray.push(calcResult);
       }
     },
-    '*': function multiply(b) {
-      if (calc === 0) {
-        calc = 1;
-      }
-      calc *= b;
-      calc = parseFloat(calc.toFixed(2));
+    '*': function multiply(a, b) {
+      let calcResult = a * b;
+      calcResult = parseFloat(calcResult.toFixed(2));
+      calcArray.push(calcResult);
     },
-    '': function restart(b) {
-      calc = b;
+    '': function restart(a, b) {
+      const calcResult = a;
+      calcArray.push(calcResult);
     },
   };
 
   $screen.keyup(function calculateString(e) {
     // press esc
     if (e.which === 27) {
-      calc = 0;
+      calcArray = [];
       $screen.val('');
       operator = '+';
       $screen.focus();
-      screenValue = '';
       // press enter
     } else if (e.which === 13) {
       $(this).submit();
-      screenValue = parseFloat($(this)[0].value, 10);
-      calculator[operator](screenValue);
-      $screen.val(calc);
+      calcArray.push(parseFloat($(this)[0].value, 10));
+      if (calcArray.length > 1) {
+        calculator[operator](calcArray.shift(), calcArray.shift());
+      }
+      $screen.val(calcArray[0]);
       operator = '';
       // press operator
     } else if ((e.shiftKey && (e.keyCode === 187 || e.keyCode === 56)) ||
     (!e.shiftKey && (e.keyCode === 191 || e.keyCode === 189))) {
       $(this).submit();
-      screenValue = parseFloat($(this)[0].value, 10);
-      calculator[operator](screenValue);
+      calcArray.push(parseFloat($(this)[0].value, 10));
+      if (calcArray.length > 1) {
+        calculator[operator](calcArray.shift(), calcArray.shift());
+      }
+
       if (e.shiftKey && e.keyCode === 187) {
         operator = '+';
       }
@@ -81,35 +91,40 @@ $(() => {
       if (!e.shiftKey && e.keyCode === 191) {
         operator = '/';
       }
-      screenValue = '';
-      $screen.val(calc);
+      $screen.val(calcArray[0]);
       $screen.select();
     }
   });
   $buttons.click(function buttonClick() {
     const $buttonValue = $(this).text();
     if ($(this).attr('id') === 'clear') {
-      calc = 0;
+      calcArray = [];
       $screen.val('');
-      operator = '+';
+      operator = '';
       $screen.focus();
-      screenValue = '';
     } else if ($(this).attr('id') === 'equals') {
-      screenValue = parseFloat($screen[0].value, 10);
-      calculator[operator](screenValue);
-      $screen.val(calc);
+      calcArray.push(parseFloat($screen[0].value, 10));
+      if (calcArray.length > 1) {
+        calculator[operator](calcArray.shift(), calcArray.shift());
+      }
+      $screen.val('');
+      $screen.val(calcArray[0]);
       operator = '';
       $screen.focus();
     } else if ($(this).attr('class') === 'operator') {
-      screenValue = parseFloat($screen[0].value, 10);
-      calculator[operator](screenValue);
+      calcArray.push(parseFloat($screen[0].value, 10));
+      if (calcArray.length > 1) {
+        calculator[operator](calcArray.shift(), calcArray.shift());
+      }
       operator = $buttonValue;
-      screenValue = '';
-      $screen.val(calc);
+      $screen.val('');
+      $screen.val(calcArray[0]);
       $screen.select();
     } else {
-      screenValue += $buttonValue;
-      $screen.val(screenValue);
+      if ((1 * $screen.val()) === calcArray[0]) {
+        $screen.val('');
+      }
+      $screen.val(($screen.val() + $buttonValue));
       $screen.focus();
     }
   });
