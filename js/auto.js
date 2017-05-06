@@ -1,5 +1,7 @@
 /* global $*/
 $(() => {
+  const ESC = 27;
+  const ENTER = 13;
   const $screen = $('#screen');
   const $buttons = $('span');
   let operator = '';
@@ -8,123 +10,89 @@ $(() => {
   const calculator = {
     '+': function add(a, b) {
       const calcResult = a + b;
-      calcArray.push(calcResult);
+      return calcResult;
     },
     '-': function subtract(a, b) {
       let calcResult = a - b;
       calcResult = parseFloat(calcResult.toFixed(2));
-      calcArray.push(calcResult);
+      return calcResult;
     },
     x: function multiply(a, b) {
       let calcResult = a * b;
       calcResult = parseFloat(calcResult.toFixed(2));
-      calcArray.push(calcResult);
+      return calcResult;
     },
     '÷': function divide(a, b) {
       if (b === 0) {
-        calcArray.push('error');
-      } else {
-        let calcResult = a / b;
-        calcResult = parseFloat(calcResult.toFixed(2));
-        calcArray.push(calcResult);
+        return 'error';
       }
+      let calcResult = a / b;
+      calcResult = parseFloat(calcResult.toFixed(2));
+      return calcResult;
     },
     '/': function divide(a, b) {
       if (b === 0) {
-        calcArray.push('error');
-      } else {
-        let calcResult = a / b;
-        calcResult = parseFloat(calcResult.toFixed(2));
-        calcArray.push(calcResult);
+        return 'error';
       }
+      let calcResult = a / b;
+      calcResult = parseFloat(calcResult.toFixed(2));
+      return calcResult;
     },
     '*': function multiply(a, b) {
       let calcResult = a * b;
       calcResult = parseFloat(calcResult.toFixed(2));
-      calcArray.push(calcResult);
+      return calcResult;
     },
     '': function restart(a) {
       const calcResult = a;
-      calcArray.push(calcResult);
+      return calcResult;
     },
   };
 
-  $screen.keyup(function calculateString(e) {
-    // press esc
-    if (e.which === 27) {
-      calcArray = [];
-      $screen.val('');
-      operator = '+';
-      $screen.focus();
-      // press enter
-    } else if (e.which === 13) {
-      $(this).submit();
-      calcArray.push(parseFloat($(this)[0].value, 10));
-      if (calcArray.length > 1) {
-        calculator[operator](calcArray.shift(), calcArray.shift());
-      }
-      $screen.val(calcArray[0]);
-      operator = '';
-      // press operator
-    } else if ((e.shiftKey && (e.keyCode === 187 || e.keyCode === 56)) ||
-    (!e.shiftKey && (e.keyCode === 191 || e.keyCode === 189))) {
-      $(this).submit();
-      calcArray.push(parseFloat($(this)[0].value, 10));
-      if (calcArray.length > 1) {
-        calculator[operator](calcArray.shift(), calcArray.shift());
-      }
+  function clear() {
+    calcArray = [];
+    $screen.val('');
+    $screen.focus();
+  }
 
-      if (e.shiftKey && e.keyCode === 187) {
-        operator = '+';
+  function calculate() {
+    const input = parseFloat($screen[0].value, 10);
+    if (!isNaN(input)) {
+      calcArray.push(input);
+      if (calcArray.length > 1) {
+        calcArray.push(calculator[operator](calcArray.shift(), calcArray.shift()));
+        operator = '';
       }
-      if (e.shiftKey && e.keyCode === 56) {
-        operator = '*';
-      }
-      if (!e.shiftKey && e.keyCode === 189) {
-        operator = '-';
-      }
-      if (!e.shiftKey && e.keyCode === 191) {
-        operator = '/';
-      }
-      $screen.val(calcArray[0]);
-      $screen.select();
+    } else {
+      calcArray.push('error');
+    }
+    $screen.val(calcArray[0]);
+    $screen.select();
+  }
+  $screen.keyup((e) => {
+    if (e.which === ESC) {
+      clear();
+    } else if (e.which === ENTER) {
+      calculate();
+    } else if (calculator[e.key] && !($screen.val() === '' && e.key === '-')) {
+      calculate();
+      operator = e.key;
     }
   });
   $buttons.click(function buttonClick() {
-    const $buttonValue = $(this).text();
-    if ($(this).attr('id') === 'clear') {
-      calcArray = [];
-      $screen.val('');
-      operator = '';
-      $screen.focus();
-    } else if ($(this).attr('id') === 'equals') {
-      calcArray.push(parseFloat($screen[0].value, 10));
-      if (calcArray.length > 1) {
-        calculator[operator](calcArray.shift(), calcArray.shift());
-      }
-      $screen.val('');
-      $screen.val(calcArray[0]);
-      operator = '';
-      $screen.focus();
-    } else if ($(this).attr('class') === 'operator') {
-      // allow negative values
-      if (($screen.val() === '') && $buttonValue === '-') {
-        $screen.val(($screen.val() + $buttonValue));
-      } else {
-        calcArray.push(parseFloat($screen[0].value, 10));
-        if (calcArray.length > 1) {
-          calculator[operator](calcArray.shift(), calcArray.shift());
-        }
-        operator = $buttonValue;
-        $screen.val('');
-        $screen.val(calcArray[0]);
-        $screen.select();
-      }
+    const buttonValue = $(this).text();
+    if (buttonValue === 'C') {
+      clear();
+    } else if (buttonValue === '=') {
+      calculate();
+    } else if (calculator[buttonValue] && !($screen.val() === '' && buttonValue === '-')) {
+      calculate();
+      operator = buttonValue;
     } else {
-      if ((1 * $screen.val()) === calcArray[0]) {
+      if (parseFloat($screen.val()) === calcArray[0]) {
         $screen.val('');
       }
-      $screen.val(($screen.val() + $buttonValue));
+      $screen.val(($screen.val() + buttonValue));
       $screen.focus();
     }
   });
