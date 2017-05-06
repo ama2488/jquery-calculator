@@ -1,9 +1,100 @@
 /* global $*/
 $(() => {
+  const ESC = 27;
+  const ENTER = 13;
   const $screen = $('#screen');
   const $buttons = $('span');
-  let calc = 0;
-  let operator = '+';
+  let operator = '';
+  let calcArray = [];
+
+  const calculator = {
+    '+': function add(a, b) {
+      const calcResult = a + b;
+      return calcResult;
+    },
+    '-': function subtract(a, b) {
+      let calcResult = a - b;
+      calcResult = parseFloat(calcResult.toFixed(2));
+      return calcResult;
+    },
+    x: function multiply(a, b) {
+      let calcResult = a * b;
+      calcResult = parseFloat(calcResult.toFixed(2));
+      return calcResult;
+    },
+    '÷': function divide(a, b) {
+      if (b === 0) {
+        return 'error';
+      }
+      let calcResult = a / b;
+      calcResult = parseFloat(calcResult.toFixed(2));
+      return calcResult;
+    },
+    '/': function divide(a, b) {
+      if (b === 0) {
+        return 'error';
+      }
+      let calcResult = a / b;
+      calcResult = parseFloat(calcResult.toFixed(2));
+      return calcResult;
+    },
+    '*': function multiply(a, b) {
+      let calcResult = a * b;
+      calcResult = parseFloat(calcResult.toFixed(2));
+      return calcResult;
+    },
+    '': function restart(a) {
+      return a;
+    },
+  };
+
+  function clear() {
+    calcArray = [];
+    $screen.val('');
+    $screen.focus();
+  }
+
+  function calculate() {
+    const input = parseFloat($screen[0].value, 10);
+    if (!isNaN(input)) {
+      calcArray.push(input);
+      if (calcArray.length > 1) {
+        calcArray.push(calculator[operator](calcArray.shift(), calcArray.shift()));
+        operator = '';
+      }
+    } else {
+      calcArray.push('error');
+    }
+    $screen.val(calcArray[0]);
+    $screen.select();
+  }
+  $screen.keyup((e) => {
+    if (e.which === ESC) {
+      clear();
+    } else if (e.which === ENTER) {
+      calculate();
+    } else if (calculator[e.key] && !($screen.val() === '' && e.key === '-')) {
+      calculate();
+      operator = e.key;
+    }
+  });
+  $buttons.click(function buttonClick() {
+    const buttonValue = $(this).text();
+    if (buttonValue === 'C') {
+      clear();
+    } else if (buttonValue === '=') {
+      calculate();
+    } else if (calculator[buttonValue] && !($screen.val() === '' && buttonValue === '-')) {
+      calculate();
+      operator = buttonValue;
+    } else {
+      if (parseFloat($screen.val()) === calcArray[0]) {
+        $screen.val('');
+      }
+      $screen.val(($screen.val() + buttonValue));
+      $screen.focus();
+    }
+  });
 
   $screen.focus();
 
@@ -11,107 +102,16 @@ $(() => {
   $screen.keydown((e) => {
     // Allow: backspace, delete, escape and enter
     if ($.inArray(e.keyCode, [8, 9, 27, 13, 110]) !== -1 ||
-    // Allow + and *
-    (e.shiftKey && (e.keyCode === 187 || e.keyCode === 56)) ||
-    // Allow /, -, and .
-    (!e.shiftKey && (e.keyCode === 191 || e.keyCode === 189 || e.keyCode === 190)) ||
+    // Allow .
+    (!e.shiftKey && e.keyCode === 190) ||
     // Allow: Ctrl+A, Command+A
     (e.keyCode === 65 && (e.ctrlKey === true || e.metaKey === true)) ||
     // Allow: home, end, left, right, down, up
     (e.keyCode >= 35 && e.keyCode <= 40)) {
       return;
     }
-    // Stop the keypress if not a number
     if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
       e.preventDefault();
-    }
-  });
-
-  function calculate(currOperator, value) {
-    // do not calcuate with ERROR as an input
-    if (value === 'ERROR' || calc === 'ERROR') {
-      calc = 'ERROR';
-    // calculate beginning with negative number
-    } else if (value === '') {
-      operator = '-';
-    } else if (currOperator === '+') {
-      calc += (parseInt(value, 10));
-    } else if (currOperator === '-') {
-      calc -= (parseInt(value, 10));
-    } else if (currOperator === 'x' || currOperator === '*') {
-      if (calc === 0) {
-        calc = 1;
-      }
-      calc *= (parseInt(value, 10));
-    } else if (currOperator === '÷' || currOperator === '/') {
-      if (value === '0') {
-        calc = 'ERROR';
-      } else {
-        calc /= (parseInt(value, 10));
-      }
-    }
-  }
-  $screen.keyup(function calculateString(e) {
-    if (e.which === 13) {
-      let currValue = '';
-      $(this).submit();
-      const equation = $(this)[0].value.split('');
-      for (let i = 0; i < equation.length; i++) {
-        if (equation[i] === '+' || equation[i] === '*'
-        || equation[i] === '-' || equation[i] === '/'
-        || equation[i] === 'x' || equation[i] === '÷') {
-          // calculate using current operator and currValue each time we encounter an operator
-          calculate(operator, currValue);
-          operator = equation[i];
-          currValue = '';
-        } else {
-          currValue += equation[i];
-        }
-        // calculate at end of expression
-      } calculate(operator, currValue);
-      $screen.val(calc.toFixed(4));
-      calc = 0;
-      operator = '+';
-      $screen.focus();
-    }
-    if (e.which === 27) {
-      calc = 0;
-      $screen.val('');
-      operator = '+';
-      $screen.focus();
-    }
-  });
-
-  $buttons.click(function buttonClick() {
-    const $buttonValue = $(this).text();
-    if ($(this).attr('id') === 'clear') {
-      calc = 0;
-      $screen.val('');
-      operator = '+';
-      $screen.focus();
-    } else if ($(this).attr('id') === 'equals') {
-      let currValue = '';
-      $screen.submit();
-      const equation = $screen[0].value.split('');
-      for (let i = 0; i < equation.length; i++) {
-        if (equation[i] === '+' || equation[i] === '*'
-        || equation[i] === '-' || equation[i] === '/'
-        || equation[i] === '÷' || equation[i] === 'x') {
-          // calculate using current operator and currValue when encounters operator
-          calculate(operator, currValue);
-          operator = equation[i];
-          currValue = '';
-        } else {
-          currValue += equation[i];
-        }
-        // calculate at end of expression
-      } calculate(operator, currValue);
-      $screen.val(calc.toFIxed(4));
-      calc = 0;
-      $screen.focus();
-    } else {
-      $screen[0].value += ($buttonValue);
-      $screen.focus();
     }
   });
 });
